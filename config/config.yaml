@@ -1,0 +1,27 @@
+# 网页内容抓取工具配置文件
+
+# 基础配置
+app:
+  name: "scraper-mcp"
+  version: "0.1.0"
+  debug: true
+
+# 数据目录配置
+data:
+  screenshots: "data/screenshots"
+  pdfs: "data/pdfs"
+  markdown: "data/markdown"
+  temp: "data/temp"
+
+# 日志配置
+logging:
+  level: "INFO"
+  file: "logs/app.log"
+  max_size: "10MB"
+  backup_count: 5
+
+# 浏览器配置
+browser:
+  headless: true
+  timeout: 30000
+  user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"

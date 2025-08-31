@@ -1,0 +1,4 @@
+# 基础依赖
+pyyaml>=6.0
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
