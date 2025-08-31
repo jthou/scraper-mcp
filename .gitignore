@@ -49,7 +49,7 @@ logs/
 *.log
 
 # Data files
-data/temp/
+data/
 *.tmp
 
 # Test coverage
@@ -73,3 +73,5 @@ coverage.xml
 .env.development.local
 .env.test.local
 .env.production.local
+
+

@@ -2,3 +2,13 @@
 pyyaml>=6.0
 pytest>=7.4.0
 pytest-asyncio>=0.21.0
+
+# 浏览器自动化
+playwright>=1.40.0
+
+# PDF处理
+PyPDF2>=3.0.0
+
+# PDF生成
+weasyprint>=60.0
+reportlab>=4.0.0

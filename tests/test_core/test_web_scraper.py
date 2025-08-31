@@ -37,6 +37,20 @@ class TestWebScraper:
         assert result["url"] == "https://example.com"
         assert result["status"] == "not_implemented"
         assert "基础功能，待实现" in result["message"]
+    
+    @pytest.mark.asyncio
+    async def test_open_webpage(self):
+        """测试打开网页功能"""
+        scraper = WebScraper()
+        result = await scraper.open_webpage("https://example.com", headless=True)
+        
+        # 验证返回结果格式
+        assert "url" in result
+        assert "status" in result
+        assert result["url"] == "https://example.com"
+        
+        # 由于是测试环境，可能无法真正打开浏览器，所以只验证格式
+        print(f"网页打开测试结果: {result}")
 
 
 if __name__ == "__main__":
@@ -57,6 +71,11 @@ if __name__ == "__main__":
         result = await scraper.get_page_info("https://example.com")
         assert result["url"] == "https://example.com"
         print("✅ 页面信息测试通过")
+        
+        print("测试打开网页功能...")
+        result = await scraper.open_webpage("https://example.com", headless=True)
+        assert "url" in result and "status" in result
+        print("✅ 网页打开测试通过")
         
         print("所有测试通过！")
     

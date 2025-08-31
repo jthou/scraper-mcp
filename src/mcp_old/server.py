@@ -57,3 +57,17 @@ class MCPServer:
             "message": "所有模块测试完成",
             "results": results
         }
+    
+    async def open_webpage(self, url: str, headless: bool = False) -> Dict[str, Any]:
+        """MCP工具：打开指定网页"""
+        try:
+            web_scraper = self.modules["web_scraper"]
+            result = await web_scraper.open_webpage(url, headless)
+            return result
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"MCP工具调用失败: {str(e)}",
+                "url": url,
+                "error": str(e)
+            }
