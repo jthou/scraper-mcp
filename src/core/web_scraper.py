@@ -94,6 +94,7 @@ class WebScraper:
                 user_data_dir=str(user_data_dir),
                 channel="chrome",
                 headless=headless,
+                timeout=60000,  # 增加超时时间到60秒
                 args=[
                     "--start-maximized",
                     "--no-first-run",
@@ -153,9 +154,9 @@ class WebScraper:
             # 设置视口大小
             await self.zhihu_page.set_viewport_size({"width": 1920, "height": 1080})
             
-            # 访问知乎
-            await self.zhihu_page.goto("https://www.zhihu.com")
-            await self.zhihu_page.wait_for_load_state("networkidle")
+            # 访问知乎，增加超时时间
+            await self.zhihu_page.goto("https://www.zhihu.com", timeout=60000)
+            await self.zhihu_page.wait_for_load_state("networkidle", timeout=60000)
             
             # 模拟人类行为 - 随机等待
             import random
@@ -487,9 +488,9 @@ class WebScraper:
             # 构建搜索URL
             search_url = f"https://www.zhihu.com/search?q={query}&type=content"
             
-            # 访问搜索页面
-            await self.zhihu_page.goto(search_url)
-            await self.zhihu_page.wait_for_load_state("networkidle")
+            # 访问搜索页面，增加超时时间
+            await self.zhihu_page.goto(search_url, timeout=90000)
+            await self.zhihu_page.wait_for_load_state("networkidle", timeout=90000)
             
             # 等待搜索结果加载
             await self.zhihu_page.wait_for_timeout(3000)
@@ -532,6 +533,11 @@ class WebScraper:
     async def _extract_search_results(self) -> List[Dict[str, Any]]:
         """提取搜索结果"""
         try:
+            # 首先滚动页面多次，确保所有内容加载
+            for _ in range(5):  # 滚动5次
+                await self.zhihu_page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+                await self.zhihu_page.wait_for_timeout(1000)  # 等待内容加载
+            
             # 等待搜索结果加载 - 尝试多种可能的选择器
             selectors_to_try = [
                 ".SearchResult-item",
@@ -665,29 +671,52 @@ class WebScraper:
     async def _get_next_page_results(self, page: int) -> List[Dict[str, Any]]:
         """获取下一页结果"""
         try:
-            # 滚动到页面底部
-            await self.zhihu_page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-            await self.zhihu_page.wait_for_timeout(2000)
+            # 多次滚动页面，确保所有内容加载完全
+            for _ in range(5):
+                await self.zhihu_page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+                await self.zhihu_page.wait_for_timeout(1000)
             
-            # 查找"下一页"按钮或加载更多按钮
-            next_button = await self.zhihu_page.query_selector(".Pagination-next")
-            if not next_button:
-                # 尝试查找"加载更多"按钮
-                load_more_button = await self.zhihu_page.query_selector(".List-item button")
-                if load_more_button:
-                    await load_more_button.click()
+            # 查找并点击"下一页"按钮
+            next_buttons = await self.zhihu_page.query_selector_all(".PaginationButton")
+            for button in next_buttons:
+                text = await button.inner_text()
+                if str(page) == text.strip():
+                    # 点击对应页码的按钮
+                    await button.click()
                     await self.zhihu_page.wait_for_timeout(3000)
-                else:
-                    return []
-            else:
-                # 点击下一页
+                    
+                    # 再次滚动新页面
+                    for _ in range(5):
+                        await self.zhihu_page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+                        await self.zhihu_page.wait_for_timeout(1000)
+                    
+                    # 提取新加载的结果
+                    return await self._extract_search_results()
+            
+            # 如果没有找到页码按钮，尝试"下一页"按钮
+            next_button = await self.zhihu_page.query_selector(".Pagination-next:not(.Pagination-disabled)")
+            if next_button:
                 await next_button.click()
                 await self.zhihu_page.wait_for_timeout(3000)
+                
+                # 再次滚动新页面
+                for _ in range(5):
+                    await self.zhihu_page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+                    await self.zhihu_page.wait_for_timeout(1000)
+                
+                return await self._extract_search_results()
             
-            # 提取新加载的结果
-            return await self._extract_search_results()
+            # 尝试"加载更多"按钮
+            load_more_button = await self.zhihu_page.query_selector(".List-item button")
+            if load_more_button:
+                await load_more_button.click()
+                await self.zhihu_page.wait_for_timeout(3000)
+                return await self._extract_search_results()
+            
+            return []
             
         except Exception as e:
+            print(f"获取下一页结果失败: {e}")
             return []
     
     async def _filter_by_relevance(self, results: List[Dict[str, Any]], query: str, min_relevance: float = 0.5) -> List[Dict[str, Any]]:
