@@ -30,20 +30,7 @@ git clone <repository-url>
 cd scraper-mcp
 ```
 
-### 2. 创建虚拟环境
-```bash
-# 创建虚拟环境
-python -m venv venv
-
-# 激活虚拟环境
-# macOS/Linux:
-source venv/bin/activate
-
-# Windows:
-venv\Scripts\activate
-```
-
-### 3. 安装依赖
+### 2. 安装依赖
 ```bash
 # 升级pip
 pip install --upgrade pip
@@ -52,7 +39,7 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 4. 创建必要目录
+### 3. 创建必要目录
 ```bash
 # 创建数据目录
 mkdir -p data/screenshots data/pdfs data/markdown data/temp
@@ -117,7 +104,6 @@ chmod 755 data/ logs/
 
 ### 部署前检查
 - [ ] Python版本 >= 3.8
-- [ ] 虚拟环境已创建并激活
 - [ ] 所有依赖已安装
 - [ ] 配置文件已创建
 - [ ] 必要目录已创建
