@@ -12,3 +12,6 @@ PyPDF2>=3.0.0
 # PDF生成
 weasyprint>=60.0
 reportlab>=4.0.0
+
+# 命令行工具
+click>=8.0.0

@@ -5,20 +5,30 @@ from typing import Optional
 
 
 class Logger:
-    """最基础的日志管理类"""
+    """日志管理类"""
     
-    def __init__(self, name: str = "scraper-mcp", level: str = "INFO"):
+    def __init__(self, name: str = "scraper-toolkit", level: str = "INFO", log_file: Optional[str] = None):
         self.logger = logging.getLogger(name)
         self.logger.setLevel(getattr(logging, level.upper()))
         
-        # 如果没有处理器，添加一个控制台处理器
+        # 如果没有处理器，添加处理器
         if not self.logger.handlers:
-            handler = logging.StreamHandler()
             formatter = logging.Formatter(
                 '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
             )
-            handler.setFormatter(formatter)
-            self.logger.addHandler(handler)
+            
+            # 添加控制台处理器
+            console_handler = logging.StreamHandler()
+            console_handler.setFormatter(formatter)
+            self.logger.addHandler(console_handler)
+            
+            # 如果指定了日志文件，添加文件处理器
+            if log_file:
+                log_path = Path(log_file)
+                log_path.parent.mkdir(parents=True, exist_ok=True)
+                file_handler = logging.FileHandler(log_path)
+                file_handler.setFormatter(formatter)
+                self.logger.addHandler(file_handler)
     
     def info(self, message: str):
         """记录信息日志"""

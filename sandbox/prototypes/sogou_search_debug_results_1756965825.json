@@ -1,0 +1,41 @@
+{
+  "timestamp": "2025-09-04T14:03:14.145970",
+  "debug_results": {
+    "Python编程": {
+      "status": "success",
+      "page_title": "Python编程的相关微信公众号文章 – 搜狗微信搜索",
+      "page_url": "https://weixin.sogou.com/weixin?type=2&query=Python%E7%BC%96%E7%A8%8B",
+      "content_length": 31964,
+      "found_selectors": [
+        [
+          ".txt-box",
+          10
+        ],
+        [
+          "h3 a",
+          10
+        ]
+      ],
+      "screenshot": "/System/Volumes/Data/justin/dev/scraper-mcp/sandbox/prototypes/debug_screenshot_Python编程_1756965800.png",
+      "html_file": "/System/Volumes/Data/justin/dev/scraper-mcp/sandbox/prototypes/debug_html_Python编程_1756965800.html"
+    },
+    "机器学习": {
+      "status": "success",
+      "page_title": "机器学习的相关微信公众号文章 – 搜狗微信搜索",
+      "page_url": "https://weixin.sogou.com/weixin?type=2&query=%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0",
+      "content_length": 32156,
+      "found_selectors": [
+        [
+          ".txt-box",
+          10
+        ],
+        [
+          "h3 a",
+          10
+        ]
+      ],
+      "screenshot": "/System/Volumes/Data/justin/dev/scraper-mcp/sandbox/prototypes/debug_screenshot_机器学习_1756965815.png",
+      "html_file": "/System/Volumes/Data/justin/dev/scraper-mcp/sandbox/prototypes/debug_html_机器学习_1756965815.html"
+    }
+  }
+}

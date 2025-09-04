@@ -1,0 +1,52 @@
+{
+  "timestamp": "2025-09-04T13:57:18.510276",
+  "queries": {
+    "Python编程": {
+      "status": "success",
+      "message": "找到 0 个结果，0 个唯一链接",
+      "query": "Python编程",
+      "url": "https://weixin.sogou.com/weixin?type=2&query=Python编程",
+      "total_results": 0,
+      "unique_links": 0,
+      "pages_searched": 2,
+      "all_links": [],
+      "results": []
+    },
+    "机器学习": {
+      "status": "success",
+      "message": "找到 0 个结果，0 个唯一链接",
+      "query": "机器学习",
+      "url": "https://weixin.sogou.com/weixin?type=2&query=机器学习",
+      "total_results": 0,
+      "unique_links": 0,
+      "pages_searched": 2,
+      "all_links": [],
+      "results": []
+    },
+    "人工智能": {
+      "status": "success",
+      "message": "找到 0 个结果，0 个唯一链接",
+      "query": "人工智能",
+      "url": "https://weixin.sogou.com/weixin?type=2&query=人工智能",
+      "total_results": 0,
+      "unique_links": 0,
+      "pages_searched": 2,
+      "all_links": [],
+      "results": []
+    }
+  },
+  "all_links_summary": {
+    "Python编程": {
+      "total_links": 0,
+      "links": []
+    },
+    "机器学习": {
+      "total_links": 0,
+      "links": []
+    },
+    "人工智能": {
+      "total_links": 0,
+      "links": []
+    }
+  }
+}
