@@ -5,7 +5,15 @@ import json
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List, Optional
-from playwright.async_api import async_playwright
+try:
+    from playwright.async_api import async_playwright
+except ImportError:
+    print("❌ Playwright 未安装，正在自动安装...")
+    import subprocess
+    import sys
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "playwright"])
+    subprocess.check_call([sys.executable, "-m", "playwright", "install", "chromium"])
+    from playwright.async_api import async_playwright
 
 
 class WebScraper:

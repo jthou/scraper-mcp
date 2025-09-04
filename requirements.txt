@@ -5,6 +5,7 @@ pytest-asyncio>=0.21.0
 
 # 浏览器自动化
 playwright>=1.40.0
+# 注意：安装后还需要运行: python3 -m playwright install chromium
 
 # PDF处理
 PyPDF2>=3.0.0

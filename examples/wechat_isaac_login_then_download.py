@@ -6,6 +6,7 @@
 import asyncio
 import sys
 from pathlib import Path
+import json
 
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
@@ -39,12 +40,29 @@ async def wait_until_logged_in(toolkit: ScraperToolkit):
                 pass
             await page.wait_for_timeout(1000)
 
-    # 双重保险：由用户手动确认
-    input('请确认已完成登录/验证且能正常看到搜索结果后，按回车继续... ')
+    # 自动继续（取消交互式 input）
+    print('检测到搜索结果已可见，自动继续执行...')
+
+
+def load_downloaded_urls(out_dir: Path):
+    """从 file_mapping.json 读取已下载URL集合，用于跳过。"""
+    mapping_file = out_dir / 'file_mapping.json'
+    urls = set()
+    if mapping_file.exists():
+        try:
+            data = json.loads(mapping_file.read_text(encoding='utf-8'))
+            for _, v in (data or {}).items():
+                u = v.get('url')
+                if u:
+                    urls.add(u)
+        except Exception:
+            pass
+    return urls
 
 
 async def run():
-    out_dir = Path('data/wechat_isaac_login')
+    # 指定输出目录：使用 p10 目录以便复用已有下载
+    out_dir = Path('data/wechat_isaac_p10')
     out_dir.mkdir(parents=True, exist_ok=True)
 
     tk = ScraperToolkit(ScrapingConfig(
@@ -61,16 +79,26 @@ async def run():
         print('2) 等待登录/验证成功...')
         await wait_until_logged_in(tk)
 
-        print('3) 仅搜索 "Isaac Sim"（全量）...')
-        res = await tk.search(Platform.WECHAT, 'Isaac Sim', max_pages=0)
+        print('3) 仅搜索 "Isaac Sim"（前9页）...')
+        res = await tk.search(Platform.WECHAT, 'Isaac Sim', max_pages=9)
         links = res.get('all_links') or [i.get('link') for i in (res.get('results') or []) if i.get('link')]
         links = [l for l in links if l]
         print(f'   获得 {len(links)} 篇文章链接（不去重，按顺序下载）')
+
+        # 读取已下载URL集合（基于 file_mapping.json）
+        downloaded_urls = load_downloaded_urls(out_dir)
+        if downloaded_urls:
+            print(f'   发现已下载 {len(downloaded_urls)} 篇（基于 file_mapping.json），将自动跳过匹配链接')
 
         print('4) 逐篇下载，遇验证码继续等待...')
         ok = 0
         fail = 0
         for i, link in enumerate(links, 1):
+            # 基于已记录URL跳过（注意：若历史是 mp.weixin 链接而当前是搜狗跳转链接，可能无法完全匹配；此处做最小可行跳过）
+            if link in downloaded_urls:
+                print(f'  [{i}/{len(links)}] 跳过（已下载记录匹配）: {link}')
+                continue
+
             print(f'  [{i}/{len(links)}] 下载: {link}')
             r = await tk.download_content(Platform.WECHAT, link, out_dir)
             if r.get('status') == 'success':
