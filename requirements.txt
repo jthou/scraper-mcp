@@ -16,3 +16,13 @@ reportlab>=4.0.0
 
 # 命令行工具
 click>=8.0.0
+
+# ArXiv文献搜索与转换
+aiohttp>=3.8.0
+feedparser>=6.0.0
+
+# PDF到Markdown转换工具
+pymupdf4llm>=0.0.27      # 推荐的PDF转换器
+pdfplumber>=0.11.0       # 轻量级PDF处理
+pypandoc>=1.15           # 传统转换工具
+marker-pdf>=1.9.0        # 最高质量学术论文转换（需要1GB+依赖）
