@@ -1,31 +1,73 @@
-"""GitHub模块配置"""
+"""GitHub配置管理 - 简化版本"""
+import os
 from dataclasses import dataclass
-from typing import Optional, Dict, Any
 from pathlib import Path
+from typing import Optional
 
 
 @dataclass
 class GitHubConfig:
-    """GitHub模块统一配置"""
+    """简化的GitHub配置类"""
+    github_token: Optional[str] = None
+    max_retries: int = 3
+    request_delay: float = 1.0
+    timeout: int = 30
+    base_url: str = "https://api.github.com"
     
-    # GitHub API配置
-    api_token: Optional[str] = None
-    api_base_url: str = "https://api.github.com"
-    api_rate_limit: int = 5000  # 认证用户限制
-    api_timeout: int = 30
+    def __post_init__(self):
+        """从.env文件或环境变量加载配置"""
+        if not self.github_token:
+            self.github_token = self._load_token()
+        
+        # 加载其他配置
+        self.max_retries = int(os.getenv('GITHUB_MAX_RETRIES', self.max_retries))
+        self.request_delay = float(os.getenv('GITHUB_REQUEST_DELAY', self.request_delay))
+        self.timeout = int(os.getenv('GITHUB_TIMEOUT', self.timeout))
     
-    # 仓库抓取配置
-    repo_max_files: int = 200
-    repo_delay: float = 0.1  # API调用间延迟（秒）
-    max_file_size: int = 1024 * 1024  # 1MB，单个文件大小限制
+    def _load_token(self) -> Optional[str]:
+        """从多个来源加载Token"""
+        # 1. 优先从环境变量
+        token = os.getenv('GITHUB_TOKEN')
+        if token:
+            return token
+            
+        # 2. 从.env文件加载
+        env_files = [
+            Path('.env'),  # 当前目录
+            Path(__file__).parent.parent.parent.parent / '.env',  # 项目根目录
+        ]
+        
+        for env_file in env_files:
+            if env_file.exists():
+                try:
+                    with open(env_file, 'r', encoding='utf-8') as f:
+                        for line in f:
+                            line = line.strip()
+                            if line.startswith('GITHUB_TOKEN=') and '=' in line:
+                                token = line.split('=', 1)[1].strip()
+                                # 移除可能的引号
+                                token = token.strip('\'"')
+                                if token and token != 'your_github_token_here':
+                                    return token
+                except Exception:
+                    continue
+        
+        return None
     
-    # Pages抓取配置
-    pages_max_pages: int = 100
-    pages_timeout: int = 30
-    pages_delay: float = 0.5  # 页面间延迟（秒）
-    pages_headless: bool = True
+    @property
+    def is_configured(self) -> bool:
+        """检查是否已配置Token"""
+        return bool(self.github_token)
     
-    # 输出配置
+    def validate(self) -> tuple[bool, str]:
+        """验证配置"""
+        if not self.github_token:
+            return False, "未配置GitHub Token"
+        
+        if not self.github_token.startswith(('ghp_', 'github_pat_')):
+            return False, "GitHub Token格式可能不正确"
+        
+        return True, "配置验证通过"
     output_base_dir: Path = Path("K-Vault/GitHub")
     create_subdirs: bool = True
     save_metadata: bool = True
@@ -63,6 +105,12 @@ class GitHubConfig:
         if isinstance(self.output_base_dir, str):
             self.output_base_dir = Path(self.output_base_dir)
         if isinstance(self.cache_dir, str):
+            self.cache_dir = Path(self.cache_dir)
+        
+        # 如果没有指定API token，尝试从Token管理器获取
+        if not self.api_token:
+            token_manager = GitHubTokenManager()
+            self.api_token = token_manager.get_token()
             self.cache_dir = Path(self.cache_dir)
         
         # 创建必要的目录
