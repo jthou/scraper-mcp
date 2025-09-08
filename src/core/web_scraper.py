@@ -5,15 +5,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List, Optional
-try:
-    from playwright.async_api import async_playwright
-except ImportError:
-    print("❌ Playwright 未安装，正在自动安装...")
-    import subprocess
-    import sys
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "playwright"])
-    subprocess.check_call([sys.executable, "-m", "playwright", "install", "chromium"])
-    from playwright.async_api import async_playwright
+from playwright.async_api import async_playwright
 
 
 class WebScraper:
@@ -32,60 +24,6 @@ class WebScraper:
             "message": f"{self.name} 模块已初始化",
             "module": self.name
         }
-    
-    async def setup_browser(self, headless: bool = False, persistent: bool = False) -> Dict[str, Any]:
-        """设置浏览器环境"""
-        try:
-            self.playwright = await async_playwright().start()
-            
-            # 使用系统Chrome浏览器
-            browser = await self.playwright.chromium.launch(
-                channel="chrome",  # 使用系统Chrome
-                headless=headless,
-                args=[
-                    "--start-maximized",
-                    "--disable-blink-features=AutomationControlled",
-                    "--disable-web-security",
-                    "--disable-features=VizDisplayCompositor"
-                ]
-            )
-            
-            if persistent:
-                # 持久化模式：创建持久化上下文
-                self.zhihu_context = await browser.new_context(
-                    user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-                )
-                self.zhihu_page = await self.zhihu_context.new_page()
-            else:
-                # 非持久化模式：创建临时上下文
-                context = await browser.new_context(
-                    user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-                )
-                self.zhihu_page = await context.new_page()
-            
-            return {
-                "status": "success",
-                "message": "浏览器设置成功",
-                "headless": headless,
-                "persistent": persistent
-            }
-        except Exception as e:
-            return {
-                "status": "error",
-                "message": f"浏览器设置失败: {str(e)}"
-            }
-    
-    async def cleanup(self):
-        """清理资源"""
-        try:
-            if self.zhihu_page:
-                await self.zhihu_page.close()
-            if self.zhihu_context:
-                await self.zhihu_context.close()
-            if self.playwright:
-                await self.playwright.stop()
-        except Exception as e:
-            print(f"资源清理失败: {e}")
     
     async def get_page_info(self, url: str) -> Dict[str, Any]:
         """获取页面信息 - 最基础的功能"""
