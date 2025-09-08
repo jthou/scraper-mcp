@@ -700,6 +700,17 @@ class WeChatScraper:
             # 模拟人类行为
             await self.stealth.simulate_human_behavior(self.page, duration=4)
             
+            # 额外等待页面完全加载
+            await asyncio.sleep(5)
+            
+            # 模拟用户滚动页面，触发懒加载
+            await self.page.evaluate("window.scrollBy(0, 300)")
+            await asyncio.sleep(1)
+            await self.page.evaluate("window.scrollBy(0, 500)")
+            await asyncio.sleep(1)
+            await self.page.evaluate("window.scrollBy(0, 800)")
+            await asyncio.sleep(2)
+            
             # 生成PDF文件路径
             if output_path:
                 pdf_path = Path(output_path)
@@ -709,20 +720,49 @@ class WeChatScraper:
             pdf_path.parent.mkdir(parents=True, exist_ok=True)
             
             # 设置更长的超时时间
-            self.page.set_default_timeout(60000)  # 60秒超时
+            self.page.set_default_timeout(120000)  # 120秒超时
+            self.page.set_default_navigation_timeout(120000)  # 120秒导航超时
             
-            # 使用浏览器打印功能生成PDF
-            await self.page.pdf(
-                path=str(pdf_path),
-                format='A4',
-                print_background=True,
-                margin={
-                    'top': '1cm',
-                    'right': '1cm',
-                    'bottom': '1cm',
-                    'left': '1cm'
-                }
-            )
+            # 等待页面完全加载
+            await asyncio.sleep(5)
+            
+            # 使用浏览器打印功能生成PDF，增加错误处理
+            try:
+                self.logger.info(f"开始生成PDF: {pdf_path}")
+                await self.page.pdf(
+                    path=str(pdf_path),
+                    format='A4',
+                    print_background=True,
+                    margin={
+                        'top': '1cm',
+                        'right': '1cm',
+                        'bottom': '1cm',
+                        'left': '1cm'
+                    }
+                )
+                self.logger.info(f"PDF生成完成: {pdf_path}")
+            except Exception as pdf_error:
+                # 如果PDF生成失败，尝试使用不同的参数
+                self.logger.warning(f"PDF生成失败，尝试备用参数: {pdf_error}")
+                try:
+                    await self.page.pdf(
+                        path=str(pdf_path),
+                        format='A4',
+                        print_background=True,
+                        margin={
+                            'top': '0.5cm',
+                            'right': '0.5cm',
+                            'bottom': '0.5cm',
+                            'left': '0.5cm'
+                        }
+                    )
+                except Exception as pdf_error2:
+                    # 如果仍然失败，尝试使用更简单的参数
+                    self.logger.warning(f"PDF生成再次失败，尝试简化参数: {pdf_error2}")
+                    await self.page.pdf(
+                        path=str(pdf_path),
+                        format='A4'
+                    )
             
             return {
                 "status": "success",
