@@ -45,14 +45,13 @@ async def search_zhihu_content():
             return
         
         # 2. 搜索内容
-        query = "Python编程"
+        query = "RTX 5080"
         print(f"\n2. 搜索知乎内容: {query}")
         search_result = await toolkit.search(Platform.ZHIHU, query, max_pages=2)
         
         if search_result["status"] == "success":
             print(f"   ✅ 搜索成功!")
             print(f"   总结果数: {search_result['total_results']}")
-            print(f"   搜索页面数: {search_result['pages_searched']}")
             
             # 显示前3个结果
             results = search_result.get('results', [])
