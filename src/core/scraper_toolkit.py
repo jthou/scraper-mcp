@@ -58,11 +58,12 @@ class ScraperToolkit:
         persistent = persistent if persistent is not None else self.config.persistent
         
         if platform == Platform.ZHIHU:
-            result = await self.web_scraper.setup_browser(headless, persistent)
+            result = await self.web_scraper.login_zhihu(headless)
         elif platform == Platform.WECHAT:
             result = await self.wechat_scraper.setup_browser(headless, persistent)
         else:
-            result = await self.web_scraper.setup_browser(headless, persistent)
+            # 对于通用平台，我们尝试使用WebScraper的login_zhihu方法
+            result = await self.web_scraper.login_zhihu(headless)
         
         if result["status"] == "success":
             self._browser_initialized = True

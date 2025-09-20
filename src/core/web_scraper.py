@@ -565,24 +565,31 @@ class WebScraper:
                 try:
                     # 提取标题和链接 - 尝试多种可能的选择器
                     title_element = None
-                    title_selectors = [
-                        ".ContentItem-title a",
-                        "h2 a",
-                        ".title a",
-                        "a[href*='/question/']",
-                        "a[href*='/p/']"
-                    ]
-                    
-                    for selector in title_selectors:
-                        title_element = await item.query_selector(selector)
-                        if title_element:
-                            break
-                    
-                    if not title_element:
+                    try:
+                        title_selectors = [
+                            ".ContentItem-title a",
+                            "h2 a",
+                            ".title a",
+                            "a[href*='/question/']",
+                            "a[href*='/p/']"
+                        ]
+                        
+                        for selector in title_selectors:
+                            try:
+                                title_element = await item.query_selector(selector)
+                                if title_element:
+                                    break
+                            except:
+                                continue
+                        
+                        if not title_element:
+                            continue
+                        
+                        title = await title_element.inner_text()
+                        href = await title_element.get_attribute("href")
+                    except Exception as e:
+                        # 如果提取标题和链接失败，跳过这个结果
                         continue
-                    
-                    title = await title_element.inner_text()
-                    href = await title_element.get_attribute("href")
                     
                     # 处理相对链接
                     if href and not href.startswith("http"):
@@ -594,60 +601,81 @@ class WebScraper:
                             href = f"https://www.zhihu.com/{href}"
                     
                     # 提取摘要 - 尝试多种可能的选择器
-                    summary_element = None
-                    summary_selectors = [
-                        ".RichText",
-                        ".content",
-                        ".summary",
-                        ".excerpt"
-                    ]
-                    
-                    for selector in summary_selectors:
-                        summary_element = await item.query_selector(selector)
-                        if summary_element:
-                            break
-                    
                     summary = ""
-                    if summary_element:
-                        summary = await summary_element.inner_text()
-                        summary = summary.strip()[:200] + "..." if len(summary) > 200 else summary
+                    try:
+                        summary_element = None
+                        summary_selectors = [
+                            ".RichText",
+                            ".content",
+                            ".summary",
+                            ".excerpt"
+                        ]
+                        
+                        for selector in summary_selectors:
+                            try:
+                                summary_element = await item.query_selector(selector)
+                                if summary_element:
+                                    break
+                            except:
+                                continue
+                        
+                        if summary_element:
+                            summary = await summary_element.inner_text()
+                            summary = summary.strip()[:200] + "..." if len(summary) > 200 else summary
+                    except Exception as e:
+                        # 如果提取摘要失败，使用空摘要
+                        pass
                     
                     # 提取作者信息 - 尝试多种可能的选择器
-                    author_element = None
-                    author_selectors = [
-                        ".AuthorInfo-name",
-                        ".author",
-                        ".user-name",
-                        ".username"
-                    ]
-                    
-                    for selector in author_selectors:
-                        author_element = await item.query_selector(selector)
-                        if author_element:
-                            break
-                    
                     author = ""
-                    if author_element:
-                        author = await author_element.inner_text()
+                    try:
+                        author_element = None
+                        author_selectors = [
+                            ".AuthorInfo-name",
+                            ".author",
+                            ".user-name",
+                            ".username"
+                        ]
+                        
+                        for selector in author_selectors:
+                            try:
+                                author_element = await item.query_selector(selector)
+                                if author_element:
+                                    break
+                            except:
+                                continue
+                        
+                        if author_element:
+                            author = await author_element.inner_text()
+                    except Exception as e:
+                        # 如果提取作者信息失败，使用空作者
+                        pass
                     
                     # 提取点赞数 - 尝试多种可能的选择器
-                    vote_element = None
-                    vote_selectors = [
-                        ".VoteButton--up",
-                        ".vote-count",
-                        ".like-count",
-                        ".upvote"
-                    ]
-                    
-                    for selector in vote_selectors:
-                        vote_element = await item.query_selector(selector)
-                        if vote_element:
-                            break
-                    
                     vote_count = 0
-                    if vote_element:
-                        vote_text = await vote_element.inner_text()
-                        vote_count = self._extract_number(vote_text)
+                    try:
+                        vote_element = None
+                        vote_selectors = [
+                            ".VoteButton--up",
+                            ".vote-count",
+                            ".like-count",
+                            ".upvote"
+                        ]
+                        
+                        for selector in vote_selectors:
+                            try:
+                                vote_element = await item.query_selector(selector)
+                                if vote_element:
+                                    break
+                            except:
+                                continue
+                        
+                        if vote_element:
+                            vote_text = await vote_element.inner_text()
+                            vote_count = self._extract_number(vote_text)
+                    except Exception as e:
+                        # 如果提取点赞数失败，继续处理其他结果
+                        pass
                     
                     result = {
                         "title": title.strip(),
